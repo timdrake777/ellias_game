@@ -1,12 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { RouteComponentProps } from "react-router-dom";
 import { v1 as uuid } from "uuid";
 
-const CreateRoom = () => {
-    const id = uuid();
+interface Props extends RouteComponentProps {}
+
+const CreateRoom = (props: Props) => {
+    function create() {
+        const id = uuid();
+        props.history.push(`/room/${id}`);
+    }
 
     return (
-        <Link to={`/room/${id}`}>Create room</Link>
+        <button onClick={create}>Create room</button>
     );
 };
 
