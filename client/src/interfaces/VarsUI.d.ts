@@ -7,6 +7,7 @@ declare namespace VarsUI {
 
   interface MatchParams {
     roomID: string;
+    username: string;
   }
 
   interface PeersInRoom {
@@ -19,7 +20,7 @@ declare namespace VarsUI {
   }
 
   interface SocketToRoom {
-    [roomId: string]: string;
+    [roomId: string]: string | null;
   }
 }
 
