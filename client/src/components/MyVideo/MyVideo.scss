@@ -1,0 +1,18 @@
+.video {
+  &--client {
+    height: 360px;
+    width: 480px;
+    position: relative;
+
+    video {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &--face_recognition {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}

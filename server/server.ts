@@ -15,23 +15,33 @@ const io = new Server<P2PUI.ClientToServer, P2PUI.ServerToClient>(server, {
 
 const clearPeer = (socketId: string) => {
   let roomID: string | null = socketToRoom[socketId];
+  const deleteRoom: Promise<VarsUI.UsersInRoom> =
+    new Promise<VarsUI.UsersInRoom>(() => {
+      if (roomID) {
+        delete users[roomID];
+        rooms = rooms.filter((room) => {
+          room !== roomID;
+        });
+      }
+    });
+
   if (roomID) {
     let room: string[] = users[roomID];
     if (room) {
       room = room.filter((id) => id !== socketId);
       users[roomID] = room;
       socketToRoom[socketId] = null;
-      if (users[roomID].length === 0) {
-        delete users[roomID];
+    } else {
+      deleteRoom.then(() => {
         io.in(usersWithoutRooms).emit("all rooms", rooms);
-      }
+      });
     }
   } else {
     return;
   }
 };
 
-const rooms: string[] = [];
+let rooms: string[] = [];
 let usersWithoutRooms: string[] = [];
 
 const users: VarsUI.UsersInRoom = {};
@@ -42,15 +52,20 @@ io.on("connection", (socket) => {
   socket.emit("all rooms", rooms);
   usersWithoutRooms.push(socket.id);
 
-  const userJoingRoom: Promise<string[]> = new Promise<string[]>(function(resolve, reject) {
+  const userJoingRoom: Promise<string[]> = new Promise<string[]>(function () {
     usersWithoutRooms = usersWithoutRooms.filter((user) => user !== socket.id);
-  })
+  });
 
-  socket.on("create room", (roomID) => {
+  socket.on("create room", ({ roomID, socketID }) => {
     rooms.push(roomID);
-    userJoingRoom.then(() => {
+    const userCreateRoom: Promise<string[]> = new Promise<string[]>(() => {
+      usersWithoutRooms = usersWithoutRooms.filter(
+        (user) => user !== socketID
+      );
+    });
+    userCreateRoom.then(() => {
       io.in(usersWithoutRooms).emit("all rooms", rooms);
-    })
+    });
   });
 
   socket.on("join room", (roomID) => {
@@ -68,7 +83,7 @@ io.on("connection", (socket) => {
     socketToRoom[socket.id] = roomID;
 
     const usersInThisRoom: string[] = users[roomID].filter(
-      (id: string) => id !== socket.id
+      (id) => id !== socket.id
     );
 
     socket.emit("all users", usersInThisRoom);
@@ -90,7 +105,6 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     clearPeer(socket.id);
-
     socket.broadcast.emit("userDisconnected", { id: socket.id });
     usersWithoutRooms.push(socket.id);
   });

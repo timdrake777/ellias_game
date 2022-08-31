@@ -10,7 +10,7 @@ declare namespace P2PUI {
       signal: Peer.SignalData;
       callerID: string;
     }) => void;
-    "create room": (roomID: string) => void;
+    "create room": (a: {roomID: string, socketID: string}) => void;
   }
 
   interface ServerToClient {

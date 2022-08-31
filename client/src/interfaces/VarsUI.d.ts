@@ -1,8 +1,13 @@
+import { MutableRefObject } from "react";
 import Peer from "simple-peer";
 
 declare namespace VarsUI {
   interface PropsVideo {
     peer: { peer: Peer.Instance };
+  }
+
+  interface PropsMyVideo {
+    refer: MutableRefObject<HTMLVideoElement | null>;
   }
 
   interface MatchParams {
